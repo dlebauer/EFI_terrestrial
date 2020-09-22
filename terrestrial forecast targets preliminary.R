@@ -142,7 +142,7 @@ use.H2o$daily.nsae.H2o<-use.H2o$nsae.H2o*48
 
 
 ## create daily flux targets for Co2 and H2o
-daily.Co2.flux.taget<-use.c[,c("siteID","Year","DOY","daily.nsae.Co2")]
-daily.H2o.flux.taget<-use.H2o[,c("siteID","Year","DOY","daily.nsae.H2o")]
+daily.Co2.flux.target<-use.c[,c("siteID","Year","DOY","daily.nsae.Co2")]
+daily.H2o.flux.target<-use.H2o[,c("siteID","Year","DOY","daily.nsae.H2o")]
 
 
