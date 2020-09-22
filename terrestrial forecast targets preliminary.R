@@ -74,13 +74,14 @@ daily.moisture.target<-aggregate(list(moisture=sensor1$soil.moist, ExpUncert=sen
 ## download bundled data product from NEON API
 zipsByProduct(dpID= c("DP4.00200.001"), package="basic", 
               site=c("BART","KONZ","SRER","OSBS"), 
-              startdate="2019-01", enddate="2019-12",
-              savepath="C:\\Users\\aryoung\\Desktop\\EFI\\Downloads", 
+              startdate="2019-06", enddate="2019-07",
+              savepath="C:\\Users\\Dropcopter2\\Documents\\GitHub\\EFI_terrestrial", 
               check.size=F)
 
 
 # set your working directory to the download location. 
-setwd("C:\\Users\\aryoung\\Desktop\\EFI\\Downloads")
+#setwd("C:\\Users\\aryoung\\Desktop\\EFI\\Downloads")
+setwd("C:\\Users\\Dropcopter2\\Documents\\GitHub\\EFI_terrestrial")
 
 ## read in the zipped files
 flux <- stackEddy(filepath="filesToStack00200",level="dp04")
@@ -96,22 +97,52 @@ SRER<-flux$SRER
 SRER$siteID<-"SRER"
 
 # arrange the dataframe with all sites
-fl<-rbind(SRER, KONZ, SRER,BART)
+fl<-rbind(OSBS, KONZ, SRER,BART)
+names(fl)
 
 ## add Day Of Year and Year
 fl$DOY<-yday(fl$timeBgn)
 fl$Year<-year(fl$timeBgn)
 
 ## this is the half hour target ** without uncertainty
-half.hour.flux.target<-fl[,c("siteID","Year","DOY","timeBgn","data.fluxCo2.nsae.flux","data.fluxH2o.nsae.flux","qfqm.fluxCo2.nsae.qfFinl","qfqm.fluxH2o.nsae.qfFinl")]
+names(fl)
+
+half.hour.flux.target<-fl[ ,c("siteID","Year","DOY","timeBgn","data.fluxCo2.nsae.flux","data.fluxH2o.nsae.flux")]
 
 ## calculate daily sum of Co2 and H2o flux
+
 # Take the average half hour flux per day, then multiply by 48 half hour measurements for daily sum
 avg.daily<-aggregate(list(nsae.Co2=fl$data.fluxCo2.nsae.flux,nsae.H2o=fl$data.fluxH2o.nsae.flux),
                   by=list( siteID=fl$siteID, Year=fl$Year, DOY=fl$DOY), FUN="mean", na.rm=T)
-# multiple avg 30 min flux times 48
-avg.daily$sum.nsae.Co2<-avg.daily$nsae.Co2*48
-avg.daily$sum.nsae.H2o<-avg.daily$nsae.H2o*48
+# create a site-year-date unique ID
+avg.daily$syd<-paste(avg.daily$siteID, avg.daily$Year, avg.daily$DOY)
 
-## create daily flux target
-daily.flux.taget<-avg.daily[,c("siteID","Year","DOY","nsae.Co2","nsae.H2o")]
+# But we need to take out days with fewer than 44 usable observations (a day must have 22 hours of data to be included)
+fl$goodc<-as.numeric(is.na(fl$data.fluxCo2.nsae.flux))
+fl$goodH2o<-as.numeric(is.na(fl$data.fluxH2o.nsae.flux))
+
+# here I count the number of NA in each day
+t.c<-aggregate(fl$goodc, by=list(siteID=fl$siteID,Year=fl$Year,DOY=fl$DOY), FUN="sum")
+t.c$syd<-paste(t.c$siteID, t.c$DOY, t.c$DOY)
+use.c<-subset(t.c, x>=44)
+table(use.c$x) #confirm there are values for 44, 45:48 half hour obs only.
+
+t.H2o<-aggregate(fl$goodH2o, by=list(siteID=fl$siteID,Year=fl$Year,DOY=fl$DOY), FUN="sum")
+t.H2o$syd<-paste(t.H2o$siteID, t.H2o$DOY, t.H2o$DOY)
+use.H2o<-subset(t.H2o, x>=44)
+table(use.H2o$x) #confirm there are values for 44, 45:48 half hour obs only.
+
+
+use.c$nsae.Co2<-avg.daily$nsae.Co2[match(use.c$syd, avg.daily$syd)]
+use.H2o$nsae.H2o<-avg.daily$nsae.H2o[match(use.H2o$syd, avg.daily$syd)]
+
+# multiple avg 30 min flux times 48
+use.c$daily.nsae.Co2<-use.c$nsae.Co2*48
+use.H2o$daily.nsae.H2o<-use.H2o$nsae.H2o*48
+
+
+## create daily flux targets for Co2 and H2o
+daily.Co2.flux.taget<-use.c[,c("siteID","Year","DOY","daily.nsae.Co2")]
+daily.H2o.flux.taget<-use.H2o[,c("siteID","Year","DOY","daily.nsae.H2o")]
+
+
