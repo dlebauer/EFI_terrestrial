@@ -17,7 +17,7 @@ options(stringsAsFactors = FALSE)
 
 ## sd has Sensor Depths
 sensor_depth <-
-  read.csv("C:\\Users\\aryoung\\Downloads\\SWC_depths.csv")
+  read.csv("inputs/SWC_depths.csv")
 
 # multiply negative depth values by -1 for easier math
 sensor_depth$sensorDepths <- sensor_depth$sensorDepths * -1
@@ -201,17 +201,14 @@ zipsByProduct(
   site = c("BART", "KONZ", "SRER", "OSBS"),
   startdate = "2019-06",
   enddate = "2019-07",
-  savepath = "C:\\Users\\Dropcopter2\\Documents\\GitHub\\EFI_terrestrial",
+  savepath = "outputs/",
   check.size = FALSE
 )
 
-
-# set your working directory to the download location.
-# setwd("C:\\Users\\aryoung\\Desktop\\EFI\\Downloads")
 setwd("C:\\Users\\Dropcopter2\\Documents\\GitHub\\EFI_terrestrial")
 
 ## read in the zipped files
-flux <- stackEddy(filepath = "filesToStack00200", level = "dp04")
+flux <- stackEddy(filepath = "outputs/filesToStack00200", level = "dp04")
 
 # the object flux has each site in a slot. Add siteID then rbind them into one df called 'fl'
 OSBS <- flux$OSBS

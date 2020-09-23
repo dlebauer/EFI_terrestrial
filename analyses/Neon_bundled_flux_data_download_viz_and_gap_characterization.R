@@ -19,17 +19,12 @@ zipsByProduct(
   dpID = c("DP4.00200.001"), package = "basic",
   site = c("SRER", "KONZ", "BART"),
   startdate = "2014-01", enddate = "2020-08",
-  savepath = "C:\\Users\\aryoung\\Desktop\\EFI\\Downloads",
+  savepath = "outputs/",
   check.size = FALSE
 )
 
-
-# set your working directory to the download location.
-setwd("C:\\Users\\aryoung\\Desktop\\EFI\\Downloads")
-
-
 #### Co2 and h20 flux
-flux <- stackEddy(filepath = "filesToStack00200", level = "dp04")
+flux <- stackEddy(filepath = "outputs/filesToStack00200", level = "dp04")
 
 names(flux)
 
