@@ -157,7 +157,7 @@ sensor_moisture_uncert <-
         day = sensor1$day,
         spd = sensor1$spd
       ),
-    FUN = "mean",
+    FUN = "sum",
     na.rm = T
   )
 
