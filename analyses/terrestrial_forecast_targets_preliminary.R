@@ -16,7 +16,7 @@ options(stringsAsFactors = FALSE)
 
 
 ## sd has Sensor Depths
-sensor_depth <-read.csv("inputs\\SWC_depths.csv")
+sensor_depth <-read.csv("inputs/SWC_depths.csv")
 
 # multiply negative depth values by -1 for easier math
 sensor_depth$sensorDepths <- sensor_depth$sensorDepths * -1
