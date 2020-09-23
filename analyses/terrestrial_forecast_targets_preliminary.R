@@ -4,7 +4,7 @@
 
 ## This script makes 4 target dataframes
 ## for soil moisture: target_30m_moisture  ; target_daily_moisture
-## for Co2 and H2o flux: half.hour.flux.target ; daily.flux.target
+## for Co2 and H2o flux: target_half_hour_flux ; target_daily_flux
 
 
 library(neonUtilities)
@@ -16,8 +16,7 @@ options(stringsAsFactors = FALSE)
 
 
 ## sd has Sensor Depths
-sensor_depth <-
-  read.csv("C:\\Users\\aryoung\\Downloads\\SWC_depths.csv")
+sensor_depth <-read.csv("inputs\\SWC_depths.csv")
 
 # multiply negative depth values by -1 for easier math
 sensor_depth$sensorDepths <- sensor_depth$sensorDepths * -1
@@ -31,7 +30,8 @@ sensor_depth$spd <-
     sensor_depth$measurementLevel
   )
 
-### calculated sensor widths for calculating their weight for weighted average
+### The 4 chunks beow calculate sensor widths to calculating their proportion of the depth profile (i.e. weight)
+## it is repetitive, and a function could be used to replace it. But it is functional
 # BART
 bart_sd <- sensor_depth[sensor_depth$site == "BART", ]
 bart_sd$width <- 0 # made a new column, a numerical placeholderto be filled with sensor widths
@@ -89,6 +89,8 @@ weighted_sensors
 
 
 ## Load soil moisture data to R environment
+
+##! Quinn, should the date be set from 2017 to 2020?  I'm only using July for space concerns on my laptop
 sm <- loadByProduct(
   dpID = "DP1.00094.001",
   site = c("BART", "SRER", "KONZ", "OSBS"),
@@ -168,8 +170,7 @@ sensor_moisture_uncert <-
   )
 
 # take the square root of the sum of squared, weighted uncertainty to produce the standard deviation
-sensor_moisture_uncert$std_dev_uncert <-
-  sqrt(sensor_moisture_uncert$sq_uncert)
+sensor_moisture_uncert$std_dev_uncert <- sqrt(sensor_moisture_uncert$sq_uncert)
 
 ### target for half hour soil moisture
 wt_avg_soil_moisture$std_dev_uncert <-
@@ -201,17 +202,12 @@ zipsByProduct(
   site = c("BART", "KONZ", "SRER", "OSBS"),
   startdate = "2019-06",
   enddate = "2019-07",
-  savepath = "C:\\Users\\Dropcopter2\\Documents\\GitHub\\EFI_terrestrial",
+  savepath = "inputs",
   check.size = FALSE
 )
 
 
-# set your working directory to the download location.
-# setwd("C:\\Users\\aryoung\\Desktop\\EFI\\Downloads")
-setwd("C:\\Users\\Dropcopter2\\Documents\\GitHub\\EFI_terrestrial")
-
-## read in the zipped files
-flux <- stackEddy(filepath = "filesToStack00200", level = "dp04")
+flux <- stackEddy(filepath = "inputs/filesToStack00200/", level = "dp04")
 
 # the object flux has each site in a slot. Add siteID then rbind them into one df called 'fl'
 OSBS <- flux$OSBS
@@ -308,10 +304,10 @@ use.c$daily.nsae.Co2 <- use.c$nsae.Co2 * 48
 use.H2o$daily.nsae.H2o <- use.H2o$nsae.H2o * 48
 
 ## create daily flux targets for Co2 and H2o
-daily.Co2.flux.target <-
+target_daily_co2_flux<-daily.Co2.flux.target <-
   use.c[, c("siteID", "Year", "DOY", "daily.nsae.Co2")]
-daily.H2o.flux.target <-
+target_daily_h2o_flux<-daily.H2o.flux.target <-
   use.H2o[, c("siteID", "Year", "DOY", "daily.nsae.H2o")]
 
-## calculate uncertainty in the daily flux values using the half hour observations?
+## Do we want to calculate uncertainty in the daily flux values using the half hour observations?
 #- take the variance of the half hour obs, then take the square root?
