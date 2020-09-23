@@ -205,8 +205,6 @@ zipsByProduct(
   check.size = FALSE
 )
 
-setwd("C:\\Users\\Dropcopter2\\Documents\\GitHub\\EFI_terrestrial")
-
 ## read in the zipped files
 flux <- stackEddy(filepath = "outputs/filesToStack00200", level = "dp04")
 
